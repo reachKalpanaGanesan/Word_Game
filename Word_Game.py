@@ -1,14 +1,29 @@
 import tkinter
+from idlelib.autocomplete import FILES
 from logging import disable
 from tkinter import ttk
 from tkinter import messagebox
-import nltk
-from nltk.corpus import words
+import random
+import string
 
-def fetchAppWord():
-    word=""
+#import nltk
+#from nltk.corpus import words
+appDisplayedWords=[]
+userGivenWords=[]
+
+def fetchAppWord(userWordPassed):
+    if userWordPassed:
+        userWordPassed=userWordPassed
+    else:
+        userWordPassed='Year'
+    #fourLetter=[]
+    word="Able"
     wordLength = radioLevelValue.get()
     wordCount = radioWordValue.get()
+    #wordList=[]
+    #for word in wordList:
+    #    with open('4-letterWords.txt','a') as fileObject:
+    #        fileObject.write(word+"\n")
     """
     1. Need to ensure that this function returns the word as per the user selected level.
     2. gets the wordlength given by user
@@ -18,13 +33,39 @@ def fetchAppWord():
         - if there are no word in file that is used, then get a new word from internet.
         - better if we create list for a-z starting word in start, so that we just need to sort the list everytime. Time can save.
     4. create a global list for app word and user word. return the word not in both list.
-    5.  
+    5. return the word based on the last letter of the user given word.
      """
-    return word
+    threeLetter = { letter :[] for letter in string.ascii_uppercase}
+    fourLetter= { letter :[] for letter in string.ascii_uppercase}
+    fiveLetter={ letter :[] for letter in string.ascii_uppercase}
 
 
-def wordSubmit():
+    if wordLength=='4':
+        with open('4-letterWords.txt','r') as fileObject:
+            for fileWord in fileObject:
+                fourLetter[fileWord[0].upper()].append(fileWord.strip("\n").title())
+        print("List: ",fourLetter)
+        if fourLetter: # checking if the list is empty of not.
+            print("List not empty")
+            return random.choice(fourLetter[userWordPassed[-1].upper()])
+        else:
+            print("List empty")
+            return word
+    elif wordLength=='3':
+        pass
+    elif wordLength=='5':
+        pass
+    else:
+        pass
+
+def wordSubmit(userWordPassed):
     """This is where we need to use the new lib to validate the user given word."""
+    """This is where we need to pupulate the app displayed word."""
+    print("User typed word: ",userWordPassed)
+    word=fetchAppWord(userWordPassed)
+    appDisplayedWords.append(word)
+
+    print("word fetched by app:",word)
     pass
 
 def gamePlay(nameSent,ageSent):
@@ -57,10 +98,10 @@ def gamePlay(nameSent,ageSent):
                     timer.set("00:00")
                     timerValue=tkinter.Entry(gameFrame,textvariable=timer,state='disabled')
                     timerValue.grid(row=0,column=4)
-
+                    appWord = tkinter.StringVar()
                     appWordLabel=tkinter.Label(gameFrame,text="The word is: ")
                     appWordLabel.grid(row=1,column=1)
-                    appWord=tkinter.StringVar()
+
                     appWord.set("")
                     appWordEntry=tkinter.Entry(gameFrame,textvariable=appWord,state='disabled')
                     appWordEntry.grid(row=1,column=2)
@@ -68,7 +109,7 @@ def gamePlay(nameSent,ageSent):
                     userWordLabel.grid(row=2,column=1)
                     userWordEntry=tkinter.Entry(gameFrame)
                     userWordEntry.grid(row=2,column=2)
-                    userSubmitButton=tkinter.Button(gameFrame,text="Submit",command=wordSubmit)
+                    userSubmitButton=tkinter.Button(gameFrame,text="Submit",command= lambda : wordSubmit(userWordEntry.get()))
                     userSubmitButton.grid(row=2,column=3)
                     showWordCountLabel=tkinter.Label(gameFrame,text="Words Left: ")
                     showWordCountLabel.grid(row=3,column=2)
