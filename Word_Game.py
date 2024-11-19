@@ -5,9 +5,10 @@ from tkinter import ttk
 from tkinter import messagebox
 import random
 import string
-import time
+#import time
 #from matplotlib.pyplot import title
 import nltk
+from matplotlib.pyplot import title
 #nltk.download('words')
 from nltk.corpus import words
 
@@ -51,6 +52,8 @@ class WordGame:
         self.fourLetter = {letter: [] for letter in string.ascii_uppercase}
         self.fiveLetter = {letter: [] for letter in string.ascii_uppercase}
 
+        self.score=0
+        self.wordCount=0
     def createWordList(self):
         print("Inside createWordList function")
         wordLength = self.radioLevelValue.get()
@@ -65,6 +68,9 @@ class WordGame:
             pass
         elif wordLength=='0':
             pass
+    def graphDisplay(self):
+        for frames in self.frame.winfo_children():
+            frames.destroy()
 
     def fetchAppWord(self,userWordPassed):
         if userWordPassed=="firstTime":
@@ -111,22 +117,22 @@ class WordGame:
         self.displayedWords.add(word.title())
         return word
 
-    def wordSubmit(self,userWordPassed,appFetchedWord,appWordBoxVariable,appWordBoxObject,userWordBoxEntryObject,timerObject,timerVariable):
+    def wordSubmit(self,userWordPassed,appFetchedWord,appWordBoxVariable,appWordBoxObject,userWordBoxEntryObject,scoreVar,scoreObject,wordCountIntVar,countObject):
         """This is where we need to use the new lib to validate the user given word."""
         """This is where we need to pupulate the app displayed word."""
         print("User typed word: ",userWordPassed)
-        timeSec = 59
-        timerObject.set("{0:2d}".format(timeSec))
-        time.sleep(1)
-        while timeSec>-1:
-            if userWordPassed.isalpha():
-                if len(userWordPassed)==int(self.radioLevelValue.get()):
-                    print("word fetched by app:", appFetchedWord)
-                    if userWordPassed[0].upper()==appFetchedWord[-1].upper():
-                        engWords = set(words.words())
-                        if userWordPassed.lower() in engWords:
-                            print("Words used: ",self.displayedWords)
-                            if userWordPassed.title() not in self.displayedWords:
+        if userWordPassed.isalpha():
+            if len(userWordPassed)==int(self.radioLevelValue.get()):
+                print("word fetched by app:", appFetchedWord)
+                if userWordPassed[0].upper()==appFetchedWord[-1].upper():
+                    engWords = set(words.words())
+                    if userWordPassed.lower() in engWords:
+                        print("Words used: ",self.displayedWords)
+                        if userWordPassed.title() not in self.displayedWords:
+                            if self.wordCount > 1:
+                                self.score+=5
+                                self.wordCount-=1
+                                print("WordCount: ",self.wordCount)
                                 userWordBoxEntryObject.config(state='disabled')
                                 print("inside main part")
                                 self.displayedWords.add(userWordPassed.title())
@@ -137,17 +143,24 @@ class WordGame:
                                 appWordBoxObject.insert(0,appWordBoxVariable)
                                 userWordBoxEntryObject.config(state='normal')
                                 userWordBoxEntryObject.delete(0,"end")
-                                timeSec-=1
+                                scoreVar.set(self.score)
+                                scoreObject.insert(0,scoreVar)
+                                wordCountIntVar.set(self.wordCount)
+                                countObject.insert(0,wordCountIntVar)
                             else:
-                                tkinter.messagebox.showerror(title="Error!!!",message="Words cannot be repeated.")
+                                tkinter.messagebox.showinfo(title="Completed!!",message="You have successfully completed the game!!!")
+                                self.graphDisplay()
                         else:
-                            tkinter.messagebox.showerror(title="Error!!!", message="The given word is not a proper english word.")
+                            tkinter.messagebox.showerror(title="Error!!!",message="Words cannot be repeated.")
                     else:
-                        tkinter.messagebox.showerror(title="Error!!!", message="The word has to start with the letter/char "+appFetchedWord[-1].upper())
+                        tkinter.messagebox.showerror(title="Error!!!", message="The given word is not a proper english word.")
                 else:
-                    tkinter.messagebox.showerror(title="Error!!",message="Error!!! Please enter "+self.radioLevelValue.get()+" letter word.")
+                    tkinter.messagebox.showerror(title="Error!!!", message="The word has to start with the letter/char "+appFetchedWord[-1].upper())
             else:
-                tkinter.messagebox.showerror(title="Error!!",message="Error!!! Invalid input. You can enter only alphabets.")
+                tkinter.messagebox.showerror(title="Error!!",message="Error!!! Please enter "+self.radioLevelValue.get()+" letter word.")
+        else:
+            tkinter.messagebox.showerror(title="Error!!",message="Error!!! Invalid input. You can enter only alphabets.")
+
 
     def gamePlay(self,nameSent,ageSent):
         print("Name: ",nameSent)
@@ -164,22 +177,18 @@ class WordGame:
                         self.createWordList()
                         for frames in self.frame.winfo_children():
                            frames.destroy()
+                        self.wordCount=int(wordCount)
                         gameFrame=tkinter.LabelFrame(self.frame)
                         gameFrame.grid(row=0,column=0)
-                        stopButton=tkinter.Button(gameFrame,text="Stop")
+                        stopButton=tkinter.Button(gameFrame,text="Home",command=self.gameStart)
                         stopButton.grid(row=0,column=0)
+
                         scoreLabel=tkinter.Label(gameFrame,text="Score: ")
                         scoreLabel.grid(row=0,column=1)
-                        scoreResult = tkinter.StringVar()
-                        scoreResult.set("0")
+                        scoreResult = tkinter.IntVar()
+                        scoreResult.set(0)
                         scoreEntry=tkinter.Entry(gameFrame,textvariable=scoreResult,state='disabled')
                         scoreEntry.grid(row=0,column=2)
-
-                        timerLabel=tkinter.Label(gameFrame,text="Time Left: ")
-                        timerLabel.grid(row=0,column=3)
-                        timer=tkinter.StringVar()
-                        timerValue=tkinter.Entry(gameFrame,textvariable=timer)
-                        timerValue.grid(row=0,column=4)
 
                         appWordLabel=tkinter.Label(gameFrame,text="The word is: ")
                         appWordLabel.grid(row=1,column=1)
@@ -192,14 +201,14 @@ class WordGame:
                         userWordLabel.grid(row=2,column=1)
                         userWordEntry=tkinter.Entry(gameFrame)
                         userWordEntry.grid(row=2,column=2)
-                        userSubmitButton=tkinter.Button(gameFrame,text="Submit",command= lambda : self.wordSubmit(userWordEntry.get(),appWordEntry.get(),appWord,appWordEntry,userWordEntry,timerValue,timer))
+                        userSubmitButton=tkinter.Button(gameFrame,text="Submit",command= lambda : self.wordSubmit(userWordEntry.get(),appWordEntry.get(),appWord,appWordEntry,userWordEntry,scoreResult,scoreEntry,wordCountLeft,showWordCountValue))
                         userSubmitButton.grid(row=2,column=3)
                         showWordCountLabel=tkinter.Label(gameFrame,text="Words Left: ")
-                        showWordCountLabel.grid(row=3,column=2)
-                        wordCountLeft=tkinter.StringVar()
-                        wordCountLeft.set("10")
+                        showWordCountLabel.grid(row=3,column=1)
+                        wordCountLeft=tkinter.IntVar()
+                        wordCountLeft.set(wordCount)
                         showWordCountValue=tkinter.Entry(gameFrame,textvariable=wordCountLeft,state='disabled')
-                        showWordCountValue.grid(row=3,column=3)
+                        showWordCountValue.grid(row=3,column=2)
 
 
                     else:
