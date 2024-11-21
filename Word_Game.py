@@ -5,10 +5,7 @@ from tkinter import ttk
 import random
 import string
 import nltk
-#nltk.download('words')
 from nltk.corpus import words
-
-
 
 class WordGame:
     def __init__(self,window):
@@ -199,14 +196,14 @@ class WordGame:
                         if userWordPassed.title() not in self.displayedWords:
                             self.score += 5
                             if self.wordCount > 1:
-                                
+
                                 self.wordCount-=1
                                 #print("WordCount: ",self.wordCount)
                                 userWordBoxEntryObject.config(state='disabled')
                                 #print("inside main part")
                                 self.displayedWords.add(userWordPassed.title())
                                 newAppWord=self.fetchAppWord(userWordPassed)
-                                #print("New Word: ",newAppWord)
+                                #print("New Word:",newAppWord)
                                 tkinter.messagebox.showinfo(title="Lovely!!", message="Good Job!! The New word is: "+newAppWord)
                                 appWordBoxVariable.set(newAppWord)
                                 appWordBoxObject.insert(0,appWordBoxVariable)
@@ -357,7 +354,7 @@ class WordGame:
         playButton=tkinter.Button(self.frame,text="Play",font=('Calibri', 12, 'bold'),command= lambda : self.gamePlay(nameData.get(),ageData.get()))
         playButton.grid(row=3,column=0)
 
-
+nltk.download('words')
 window=tkinter.Tk()
 
 window_width = 650
